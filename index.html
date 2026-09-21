@@ -108,6 +108,33 @@ img{max-width:100%}
   background:none;border:0;padding:0;text-align:left;font-size:13px;overflow:hidden}
 .pick .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{width:13px;height:13px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.2)}
+.dotbtn{width:26px;height:26px;flex:none;display:grid;place-items:center;padding:0;
+  background:transparent;border:1px solid transparent;border-radius:6px}
+.dotbtn::before{content:"";width:14px;height:14px;border-radius:4px;
+  background:var(--c,#64748B);border:1px solid rgba(0,0,0,.22)}
+.dotbtn:hover{background:var(--surface);border-color:var(--line-2)}
+.pname,.zname{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+  border-radius:5px;padding:3px 6px;font-size:13px;font-weight:500;cursor:pointer;
+  text-overflow:ellipsis;transition:background .12s,border-color .12s}
+.pname:hover,.zname:hover{background:var(--surface);border-color:var(--line)}
+.pname:not([readonly]),.zname:not([readonly]){cursor:text;background:var(--surface);
+  border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.prow[aria-current="true"] .pname{font-weight:700}
+.zname::placeholder{color:var(--muted);font-weight:400}
+.zmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.zwho{font-size:11.5px;color:var(--muted);padding:0 7px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.zwho.none{color:var(--accent)}
+.pop{position:fixed;z-index:80;padding:9px;background:var(--surface);
+  border:1px solid var(--line-2);border-radius:10px;box-shadow:0 14px 34px rgba(10,18,32,.32);
+  display:grid;grid-template-columns:repeat(5,auto);gap:6px}
+.pop.pop-list{display:flex;flex-direction:column;gap:3px;max-height:260px;overflow-y:auto;min-width:150px}
+.psw{width:28px;height:28px;border-radius:6px;border:2px solid transparent;padding:0}
+.psw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.pwho{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 10px 0 8px;
+  background:transparent;border:1px solid transparent;border-radius:6px;font-size:13px;text-align:left}
+.pwho:hover{background:var(--surface-2);border-color:var(--line)}
+.pwho[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);font-weight:600}
 .ct{font-family:"Fira Code",monospace;font-size:11px;color:var(--muted);flex:none}
 .on{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--primary);flex:none}
 .iconbtn{width:26px;height:26px;display:grid;place-items:center;flex:none;
@@ -185,7 +212,7 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
     <div class="brand"><b>分區指派板</b><span>Zone Board</span></div>
     <input id="boardTitle" class="title-in" placeholder="板名(例:0921 早班)" aria-label="板名">
     <div class="spacer"></div>
-    <button class="btn" id="btnOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v13"/></svg>換底圖</button>
+    <button class="btn" id="btnOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v13"/></svg><span class="lbl2">開啟底圖</span></button>
     <button class="btn" id="btnUndo" disabled title="還沒有可以還原的動作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg><span class="lbl">上一步</span></button>
     <button class="btn acc" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>匯出圖片</button>
   </header>
@@ -194,7 +221,8 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
     <div class="stage" id="stage">
       <div class="empty" id="empty">
         <h2>貼上今天的截圖</h2>
-        <p><span class="kbd">⌘V</span> / <span class="kbd">Ctrl V</span> 直接貼上,或把圖檔拖進來。</p>
+        <p><span class="kbd">⌘V</span> / <span class="kbd">Ctrl V</span> 直接貼上,或把圖檔拖進來。<br>
+        底圖只留在你的瀏覽器裡,不會上傳到任何地方。</p>
         <button class="btn pri" id="btnOpen2">選擇圖片檔</button>
       </div>
       <canvas id="cv" hidden tabindex="0" aria-label="分區畫布"></canvas>
@@ -206,10 +234,10 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
         <h3>負責人 <span class="n" id="cntPeople">0</span></h3>
         <div class="people" id="peopleList"></div>
         <form class="addform" id="addForm">
-          <input id="newPerson" placeholder="新增負責人…" autocomplete="off" aria-label="新增負責人">
+          <input id="newPerson" placeholder="新增負責人…(可整批貼上)" autocomplete="off" aria-label="新增負責人">
           <button class="btn sm pri" type="submit">加入</button>
         </form>
-        <p class="muted-note" id="pNote">點一個人把他設成「目前指派對象」,接著圈的每一塊都算他的。名單會留到明天,分區不會。</p>
+        <p class="muted-note" id="pNote">點一個人設成「目前指派對象」,接著圈的每一塊都算他的。<b>雙擊名字可直接改</b>,點左邊色塊換顏色。<br>上面那格可以<b>直接從 Excel 整欄貼上</b>,編號會自動去掉。名單留到明天,分區不會。</p>
       </div>
 
       <div class="sec">
@@ -219,7 +247,7 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
           <button class="tool" data-tool="rect" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/></svg>矩形</button>
           <button class="tool" data-tool="free" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 16c3-7 6 3 9-3s4 1 7-3"/><circle cx="4" cy="16" r="1.4" fill="currentColor"/></svg>手繪</button>
         </div>
-        <p class="muted-note" id="toolNote">點擊放點,雙擊或 Enter 收尾。</p>
+        <p class="muted-note" id="toolNote">點擊放點,雙擊或 Enter 收尾。圈完直接圈下一塊。</p>
         <button class="btn undo-big" id="btnUndo2" disabled title="還沒有可以還原的動作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg><span class="lbl">上一步</span><kbd class="hk">⌘Z</kbd></button>
       </div>
 
@@ -246,43 +274,9 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
 
 <input id="inlineName" hidden autocomplete="off" aria-label="區域名稱" placeholder="區域名稱">
 
-<dialog id="dlgZone"><form method="dialog" class="dlg" id="zoneForm">
-  <h2>編輯分區</h2>
-  <p class="sub">區域名稱留白的話,標籤上只會顯示人名。</p>
-  <div class="field">
-    <label for="fName">區域名稱</label>
-    <input id="fName" autocomplete="off" placeholder="留白也可以">
-  </div>
-  <div class="field">
-    <label>負責人</label>
-    <div class="whos" id="zoneWhos"></div>
-  </div>
-  <div class="dlg-actions">
-    <button type="button" class="btn ghost" id="btnZoneDel">刪除此區</button>
-    <div class="spacer"></div>
-    <button type="button" class="btn" id="btnZoneCancel">取消</button>
-    <button type="submit" class="btn pri">儲存</button>
-  </div>
-</form></dialog>
 
-<dialog id="dlgPerson"><form method="dialog" class="dlg" id="personForm">
-  <h2>負責人</h2>
-  <p class="sub">顏色跟著人走,他負責的每一塊都會是這個色。</p>
-  <div class="field">
-    <label for="pName">名字</label>
-    <input id="pName" autocomplete="off">
-  </div>
-  <div class="field">
-    <label>顏色</label>
-    <div class="swatches" id="pSwatches"></div>
-  </div>
-  <div class="dlg-actions">
-    <button type="button" class="btn ghost" id="btnPersonDel">移除此人</button>
-    <div class="spacer"></div>
-    <button type="button" class="btn" id="btnPersonCancel">取消</button>
-    <button type="submit" class="btn pri">儲存</button>
-  </div>
-</form></dialog>
+
+
 
 <dialog id="dlgOut"><div class="dlg">
   <h2>匯出圖片</h2>
@@ -294,6 +288,9 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
     <button type="button" class="btn acc" id="btnSave">下載 PNG</button>
   </div>
 </div></dialog>
+
+<div id="colorPop" class="pop" hidden role="dialog" aria-label="選顏色"></div>
+<div id="whoPop" class="pop pop-list" hidden role="dialog" aria-label="選負責人"></div>
 
 <input type="file" id="fileIn" accept="image/*" hidden>
 
@@ -310,7 +307,8 @@ var undoStack=[];
 var $=function(id){return document.getElementById(id)};
 var cv=$("cv"), ctx=cv.getContext("2d"), stage=$("stage"), empty=$("empty"), hint=$("hint");
 var inl=$("inlineName");
-var dlgZ=$("dlgZone"), dlgP=$("dlgPerson"), dlgO=$("dlgOut");
+var dlgO=$("dlgOut");
+var cPop=$("colorPop"), wPop=$("whoPop"), cPopFor=null, wPopFor=null;
 
 /* ---------- geometry ---------- */
 function centroid(p){var a=0,x=0,y=0;for(var i=0;i<p.length;i++){var j=(i+1)%p.length;
@@ -333,6 +331,38 @@ function addPerson(name){
   name=(name||"").trim(); if(!name)return null;
   var ex=byName(name); if(ex)return ex;
   var p={name:name,color:nextColor()}; S.people.push(p); saveRoster(); return p;
+}
+function parseNames(text){
+  return String(text||"")
+    .split(/[\n\r\t,，、;；]+/)
+    .map(function(t){
+      return t.replace(/^\s*[\(（\[【]?\s*\d+\s*[\.\)、。:：）\]】]?\s*/,"")
+              .replace(/\s+/g," ").trim();
+    })
+    .filter(function(t){ return t.length>0 && t.length<=24 && !/^\d+$/.test(t); });
+}
+function addMany(text){
+  var names=parseNames(text);
+  if(!names.length){ showHint("沒有讀到可用的名字"); return 0; }
+  var added=[], dup=[];
+  names.forEach(function(n){
+    if(byName(n)||added.indexOf(n)>=0){ if(dup.indexOf(n)<0)dup.push(n); return; }
+    added.push(n);
+  });
+  if(!added.length){
+    showHint(dup.length===1 ? "<b>"+esc(dup[0])+"</b> 已經在名單裡了"
+                            : "這 "+dup.length+" 個人都已經在名單裡了");
+    return 0;
+  }
+  snap();
+  added.forEach(function(n){ addPerson(n); });
+  if(added.length===1) S.active=added[0];
+  sync(); draw();
+  var msg="已加入 <b>"+added.length+"</b> 人";
+  if(dup.length) msg+="(跳過 "+dup.length+" 個重複)";
+  if(S.people.length>PALETTE.length) msg+=" · 超過 "+PALETTE.length+" 人顏色會重複,可點色塊手動換";
+  showHint(msg+" · ⌘Z 可復原");
+  return added.length;
 }
 function colorOf(s){var p=s.who?byName(s.who):null; return p?p.color:"#64748B"}
 function zoneCount(n){return S.shapes.filter(function(s){return s.who===n}).length}
@@ -387,6 +417,12 @@ function undo(){if(!undoStack.length)return; var d=JSON.parse(undoStack.pop());
   saveRoster(); draw(); sync(); refreshUndo();}
 
 /* ---------- canvas ---------- */
+function setReady(){
+  var on=!!S.img;
+  $("btnExport").disabled=!on;
+  $("btnExport").title=on?"":"先貼上或開啟一張底圖";
+  $("btnOpen").querySelector(".lbl2").textContent=on?"換底圖":"開啟底圖";
+}
 function fit(){ if(!S.img)return;
   var r=stage.getBoundingClientRect(), pad=32;
   var k=Math.max(Math.min((r.width-pad)/S.iw,(r.height-pad)/S.ih),0.1);
@@ -463,7 +499,7 @@ function showInline(s){
 function commitInline(){
   if(inl.hidden)return;
   var s=S.shapes.filter(function(x){return x.id===inl.dataset.id})[0];
-  if(s){var v=inl.value.trim(); if(v!==(s.name||"")){s.name=v; draw(); sync();}}
+  if(s){var v=inl.value.trim(); if(v!==(s.name||"")){snap(); s.name=v; draw(); syncZones();}}
   hideInline();
 }
 function hideInline(){inl.hidden=true; inl.dataset.id="";}
@@ -544,7 +580,7 @@ cv.addEventListener("dblclick",function(e){
   var pt=toImg(e);
   if(S.draft&&S.draft.type==="poly"){closeDraft();return;}
   var s=hitLabel(pt)||hitShape(pt);
-  if(s){S.sel=s.id;sync();draw();openZone(s);}
+  if(s){S.sel=s.id;syncZones();draw();showInline(s);}
 });
 
 function closeDraft(){
@@ -555,134 +591,224 @@ function closeDraft(){
   var s={id:"z"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
          pts:d.pts,name:"",who:S.active||"",lp:null};
   S.shapes.push(s); S.sel=s.id; draw(); sync(); idleHint();
-  if(!s.who)openZone(s);
+  if(!s.who&&S.people.length)openWhoPop(shapeRect(s),s.id);
 }
 
-/* ---------- zone dialog ---------- */
-function openZone(s){
-  S.editZone=s.id;
-  $("fName").value=s.name||"";
-  renderWhos(s.who||"");
-  dlgZ.showModal();
-  setTimeout(function(){$("fName").focus();$("fName").select();},30);
+/* ---------- popovers ---------- */
+function placePop(el,r){
+  el.hidden=false;
+  var w=el.offsetWidth, h=el.offsetHeight;
+  var left=Math.min(Math.max(8,r.left), window.innerWidth-w-8);
+  var top=r.bottom+6;
+  if(top+h>window.innerHeight-8) top=Math.max(8,r.top-h-6);
+  el.style.left=Math.round(left)+"px"; el.style.top=Math.round(top)+"px";
 }
-function renderWhos(active){
-  $("zoneWhos").innerHTML=S.people.map(function(p){
-    return '<button type="button" class="who" data-n="'+esc(p.name)+'" aria-pressed="'+(p.name===active)+'">'+
-      '<span class="dot" style="background:'+p.color+'"></span>'+esc(p.name)+'</button>';
-  }).join("")+'<button type="button" class="who" data-n="" aria-pressed="'+(!active)+'">未指派</button>';
+function shapeRect(s){
+  var r=cv.getBoundingClientRect(), q=labelAt(s), k=r.width/S.iw;
+  var x=r.left+q[0]*k, y=r.top+q[1]*k;
+  return {left:x-14,right:x+14,top:y-16,bottom:y+16};
 }
-$("zoneWhos").addEventListener("click",function(e){
-  var b=e.target.closest(".who"); if(!b)return;
-  [].forEach.call(this.querySelectorAll(".who"),function(x){x.setAttribute("aria-pressed",String(x===b))});
-});
-$("zoneForm").addEventListener("submit",function(e){
-  e.preventDefault();
-  var s=S.shapes.filter(function(x){return x.id===S.editZone})[0]; if(!s)return;
-  snap(); s.name=$("fName").value.trim();
-  var picked=$("zoneWhos").querySelector('.who[aria-pressed="true"]');
-  s.who=picked?picked.dataset.n:"";
-  dlgZ.close(); draw(); sync();
-});
-$("btnZoneCancel").addEventListener("click",function(){dlgZ.close()});
-$("btnZoneDel").addEventListener("click",function(){
-  snap(); S.shapes=S.shapes.filter(function(x){return x.id!==S.editZone});
-  S.sel=null; dlgZ.close(); draw(); sync();
-});
+function closePops(){ cPop.hidden=true; wPop.hidden=true; cPopFor=null; wPopFor=null; }
 
-/* ---------- person dialog ---------- */
-function openPerson(name){
-  S.editPerson=name; var p=byName(name); if(!p)return;
-  S.pendColor=p.color; $("pName").value=p.name;
-  $("pSwatches").innerHTML=PALETTE.map(function(c){
-    return '<button type="button" class="sw" data-c="'+c+'" style="background:'+c+'" aria-label="顏色" aria-pressed="'+(c===p.color)+'"></button>';
+function openColorPop(r,name){
+  var p=byName(name); if(!p)return;
+  wPop.hidden=true; cPopFor=name;
+  cPop.innerHTML=PALETTE.map(function(c){
+    return '<button type="button" class="psw" data-c="'+c+'" style="background:'+c+'" '+
+      'aria-label="顏色 '+c+'" aria-pressed="'+(c===p.color)+'"></button>';
   }).join("");
-  dlgP.showModal();
+  placePop(cPop,r);
+  var f=cPop.querySelector('.psw[aria-pressed="true"]')||cPop.querySelector(".psw");
+  if(f)f.focus();
 }
-$("pSwatches").addEventListener("click",function(e){
-  var b=e.target.closest(".sw"); if(!b)return;
-  S.pendColor=b.dataset.c;
-  [].forEach.call(this.querySelectorAll(".sw"),function(x){x.setAttribute("aria-pressed",String(x===b))});
+cPop.addEventListener("click",function(e){
+  var b=e.target.closest(".psw"); if(!b||!cPopFor)return;
+  var p=byName(cPopFor); if(p){ snap(); p.color=b.dataset.c; saveRoster(); draw(); sync(); }
+  closePops();
 });
-$("personForm").addEventListener("submit",function(e){
-  e.preventDefault();
-  var p=byName(S.editPerson); if(!p)return;
-  var nn=$("pName").value.trim(); if(!nn){dlgP.close();return;}
+
+function openWhoPop(r,id){
+  var s2=S.shapes.filter(function(x){return x.id===id})[0]; if(!s2)return;
+  cPop.hidden=true; wPopFor=id;
+  wPop.innerHTML=S.people.map(function(p){
+    return '<button type="button" class="pwho" data-n="'+esc(p.name)+'" aria-pressed="'+(p.name===s2.who)+'">'+
+      '<span class="dot" style="background:'+p.color+'"></span>'+esc(p.name)+'</button>';
+  }).join("")+'<button type="button" class="pwho" data-n="" aria-pressed="'+(!s2.who)+'">'+
+    '<span class="dot" style="background:#64748B"></span>未指派</button>';
+  placePop(wPop,r);
+  var f=wPop.querySelector('.pwho[aria-pressed="true"]')||wPop.querySelector(".pwho");
+  if(f)f.focus();
+}
+wPop.addEventListener("click",function(e){
+  var b=e.target.closest(".pwho"); if(!b||!wPopFor)return;
+  var s2=S.shapes.filter(function(x){return x.id===wPopFor})[0];
+  if(s2){ snap(); s2.who=b.dataset.n; draw(); sync(); }
+  closePops();
+});
+[cPop,wPop].forEach(function(el){
+  el.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){e.stopPropagation();closePops();cv.focus();}
+  });
+});
+document.addEventListener("pointerdown",function(e){
+  if(cPop.hidden&&wPop.hidden)return;
+  if(e.target.closest(".pop")||e.target.closest(".dotbtn"))return;
+  closePops();
+},true);
+window.addEventListener("resize",closePops);
+
+/* ---------- inline rename ---------- */
+function startEdit(input){ input.readOnly=false; input.focus(); input.select(); }
+function endPersonEdit(input,keep){
+  input.readOnly=true;
+  var old=input.dataset.n, nn=input.value.trim();
+  if(!keep||!nn||nn===old){ input.value=old; return; }
+  if(byName(nn)){ input.value=old; showHint("已經有一個叫 <b>"+esc(nn)+"</b> 的人了"); return; }
+  var p=byName(old); if(!p){ input.value=old; return; }
   snap();
-  if(nn!==p.name && !byName(nn)){
-    S.shapes.forEach(function(s){if(s.who===p.name)s.who=nn});
-    if(S.active===p.name)S.active=nn;
-    p.name=nn;
-  }
-  p.color=S.pendColor||p.color;
-  saveRoster(); dlgP.close(); draw(); sync();
-});
-$("btnPersonCancel").addEventListener("click",function(){dlgP.close()});
-$("btnPersonDel").addEventListener("click",function(){
-  snap();
-  S.shapes.forEach(function(s){if(s.who===S.editPerson)s.who=""});
-  S.people=S.people.filter(function(p){return p.name!==S.editPerson});
-  if(S.active===S.editPerson)S.active=null;
-  saveRoster(); dlgP.close(); draw(); sync();
-});
+  S.shapes.forEach(function(x){ if(x.who===old)x.who=nn });
+  if(S.active===old)S.active=nn;
+  p.name=nn; saveRoster();
+  var row=input.closest(".prow");
+  if(row)[].forEach.call(row.querySelectorAll("[data-n]"),function(el){el.dataset.n=nn});
+  draw(); syncZones();
+}
+function endZoneEdit(input,keep){
+  input.readOnly=true;
+  var z=S.shapes.filter(function(x){return x.id===input.dataset.id})[0];
+  if(!z)return;
+  if(!keep){ input.value=z.name||""; return; }
+  var v=input.value.trim();
+  if(v===(z.name||""))return;
+  snap(); z.name=v; draw();
+}
 
 /* ---------- rail ---------- */
-function sync(){
+var TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>';
+var TARGET='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>';
+
+function syncPeople(){
   $("cntPeople").textContent=S.people.length;
   $("pNote").hidden=S.people.length>0 && !!S.active;
   $("peopleList").innerHTML=S.people.map(function(p){
-    var n=zoneCount(p.name), on=p.name===S.active;
+    var n=zoneCount(p.name), on=p.name===S.active, e=esc(p.name);
     return '<div class="prow" aria-current="'+on+'">'+
-      '<button class="pick" data-act="pick" data-n="'+esc(p.name)+'">'+
-        '<span class="dot" style="background:'+p.color+'"></span>'+
-        '<span class="nm">'+esc(p.name)+'</span>'+
-        (on?'<span class="on">畫這個</span>':'')+
-        '<span class="ct">'+n+'</span></button>'+
-      '<button class="iconbtn" data-act="edit" data-n="'+esc(p.name)+'" title="改名 / 換色" aria-label="編輯 '+esc(p.name)+'">'+
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>'+
+      '<button class="dotbtn" data-act="color" data-n="'+e+'" style="--c:'+p.color+'" '+
+        'aria-haspopup="true" title="換顏色" aria-label="換 '+e+' 的顏色"></button>'+
+      '<input class="pname" data-act="pick" data-n="'+e+'" value="'+e+'" readonly '+
+        'aria-label="負責人 '+e+'" title="點一下設為目前指派對象 · 雙擊改名">'+
+      (on?'<span class="on">畫這個</span>':'')+
+      '<span class="ct">'+n+'</span>'+
+      '<button class="iconbtn del" data-act="delp" data-n="'+e+'" title="移除此人" aria-label="移除 '+e+'">'+TRASH+'</button>'+
     '</div>';
   }).join("");
+}
 
+function syncZones(){
   $("cntZone").textContent=S.shapes.length;
   $("zoneEmpty").hidden=S.shapes.length>0;
   $("zoneBtns").hidden=S.shapes.length===0;
   $("zoneList").innerHTML=S.shapes.map(function(s){
+    var who=s.who?esc(s.who):"未指派";
     return '<div class="zrow" data-id="'+s.id+'" aria-current="'+(s.id===S.sel)+'">'+
-      '<span class="dot" style="background:'+colorOf(s)+'"></span>'+
-      '<button class="nm" data-act="edit" data-id="'+s.id+'">'+
-        '<b>'+esc(s.name||s.who||"未指派")+'</b>'+
-        (s.name?'<small class="'+(s.who?"":"none")+'">'+esc(s.who||"未指派")+'</small>':'')+
-      '</button>'+
-      '<button class="iconbtn" data-act="center" data-id="'+s.id+'" title="標籤回到中心" aria-label="標籤回到中心">'+
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>'+
-      '<button class="iconbtn del" data-act="del" data-id="'+s.id+'" title="刪除" aria-label="刪除分區">'+
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg></button>'+
+      '<button class="dotbtn" data-act="who" data-id="'+s.id+'" style="--c:'+colorOf(s)+'" '+
+        'aria-haspopup="true" title="換負責人" aria-label="換這一區的負責人"></button>'+
+      '<div class="zmain">'+
+        '<input class="zname" data-act="sel" data-id="'+s.id+'" value="'+esc(s.name||"")+'" readonly '+
+          'placeholder="未命名" aria-label="區域名稱" title="點一下選取 · 雙擊改名">'+
+        '<span class="zwho'+(s.who?"":" none")+'">'+who+'</span>'+
+      '</div>'+
+      '<button class="iconbtn" data-act="center" data-id="'+s.id+'" title="標籤回到中心" aria-label="標籤回到中心">'+TARGET+'</button>'+
+      '<button class="iconbtn del" data-act="del" data-id="'+s.id+'" title="刪除此區" aria-label="刪除此區">'+TRASH+'</button>'+
     '</div>';
   }).join("");
-  idleHint();
 }
+function sync(){ syncPeople(); syncZones(); idleHint(); }
 
 $("peopleList").addEventListener("click",function(e){
   var b=e.target.closest("[data-act]"); if(!b)return;
-  if(b.dataset.act==="pick"){
+  var a=b.dataset.act;
+  if(a==="color"){ openColorPop(b.getBoundingClientRect(),b.dataset.n); }
+  else if(a==="pick"){
+    if(!b.readOnly)return;
     S.active = S.active===b.dataset.n ? null : b.dataset.n;
-    sync(); draw(); cv.focus();
-  } else openPerson(b.dataset.n);
+    sync(); draw();
+  }
+  else if(a==="delp"){
+    var nm=b.dataset.n, n=zoneCount(nm);
+    snap();
+    S.shapes.forEach(function(x){ if(x.who===nm)x.who="" });
+    S.people=S.people.filter(function(p){return p.name!==nm});
+    if(S.active===nm)S.active=null;
+    saveRoster(); closePops(); draw(); sync();
+    showHint(n ? "已移除 <b>"+esc(nm)+"</b>,他的 "+n+" 塊區變成未指派 · ⌘Z 可復原"
+               : "已移除 <b>"+esc(nm)+"</b> · ⌘Z 可復原");
+  }
+});
+$("peopleList").addEventListener("dblclick",function(e){
+  var i2=e.target.closest(".pname"); if(i2)startEdit(i2);
+});
+$("peopleList").addEventListener("keydown",function(e){
+  var i2=e.target.closest(".pname"); if(!i2)return;
+  e.stopPropagation();
+  if(i2.readOnly){
+    if(e.key==="Enter"){e.preventDefault();i2.click();}
+    else if(e.key==="F2"){e.preventDefault();startEdit(i2);}
+    return;
+  }
+  if(e.key==="Enter"){e.preventDefault();endPersonEdit(i2,true);}
+  else if(e.key==="Escape"){e.preventDefault();endPersonEdit(i2,false);}
+});
+$("peopleList").addEventListener("focusout",function(e){
+  var i2=e.target.closest(".pname"); if(i2&&!i2.readOnly)endPersonEdit(i2,true);
 });
 $("addForm").addEventListener("submit",function(e){
   e.preventDefault();
-  var v=$("newPerson").value.trim(); if(!v)return;
-  snap(); var p=addPerson(v); S.active=p.name;
-  $("newPerson").value=""; sync(); draw();
+  var v=$("newPerson").value; if(!v.trim())return;
+  addMany(v); $("newPerson").value=""; $("newPerson").focus();
+});
+$("newPerson").addEventListener("paste",function(e){
+  var cd=e.clipboardData||window.clipboardData; if(!cd)return;
+  var txt=cd.getData("text"); if(!txt)return;
+  if(!/[\n\r]/.test(txt) && parseNames(txt).length<2) return;
+  e.preventDefault();
+  addMany(txt);
+  this.value=""; this.focus();
+});
+$("newPerson").addEventListener("keydown",function(e){
+  if(e.key!=="Enter")return;
+  e.preventDefault();
+  var f=$("addForm");
+  if(f.requestSubmit)f.requestSubmit();
+  else f.dispatchEvent(new Event("submit",{cancelable:true,bubbles:true}));
 });
 $("zoneList").addEventListener("click",function(e){
   var b=e.target.closest("[data-act]"); var row=e.target.closest(".zrow");
-  if(!b){ if(row){S.sel=row.dataset.id;sync();draw();} return; }
+  if(!b){ if(row){S.sel=row.dataset.id;syncZones();draw();} return; }
   var s=S.shapes.filter(function(x){return x.id===b.dataset.id})[0]; if(!s)return;
-  if(b.dataset.act==="edit"){S.sel=s.id;sync();draw();openZone(s);}
-  else if(b.dataset.act==="center"){snap();s.lp=null;draw();}
-  else if(b.dataset.act==="del"){snap();S.shapes=S.shapes.filter(function(x){return x.id!==s.id});
-    S.sel=null;draw();sync();}
+  var a=b.dataset.act;
+  if(a==="who"){ openWhoPop(b.getBoundingClientRect(),s.id); }
+  else if(a==="sel"){ if(!b.readOnly)return; S.sel=s.id; syncZones(); draw(); }
+  else if(a==="center"){ snap(); s.lp=null; draw(); }
+  else if(a==="del"){ snap(); S.shapes=S.shapes.filter(function(x){return x.id!==s.id});
+    S.sel=null; closePops(); draw(); sync(); }
+});
+$("zoneList").addEventListener("dblclick",function(e){
+  var i2=e.target.closest(".zname"); if(i2)startEdit(i2);
+});
+$("zoneList").addEventListener("keydown",function(e){
+  var i2=e.target.closest(".zname"); if(!i2)return;
+  e.stopPropagation();
+  if(i2.readOnly){
+    if(e.key==="Enter"){e.preventDefault();i2.click();}
+    else if(e.key==="F2"){e.preventDefault();startEdit(i2);}
+    return;
+  }
+  if(e.key==="Enter"){e.preventDefault();endZoneEdit(i2,true);syncZones();}
+  else if(e.key==="Escape"){e.preventDefault();endZoneEdit(i2,false);}
+});
+$("zoneList").addEventListener("focusout",function(e){
+  var i2=e.target.closest(".zname"); if(i2&&!i2.readOnly){endZoneEdit(i2,true);syncZones();}
 });
 $("btnClearWho").addEventListener("click",function(){
   snap(); S.shapes.forEach(function(s){s.who=""}); draw(); sync();});
@@ -700,7 +826,7 @@ function loadImage(src,seed){
     S.img=im; S.iw=im.naturalWidth; S.ih=im.naturalHeight;
     if(!seed){ if(S.shapes.length)snap(); S.shapes=[]; S.sel=null; }
     hideInline(); empty.hidden=true; cv.hidden=false;
-    fit(); draw(); sync();
+    setReady(); fit(); draw(); sync();
   };
   im.src=src;
 }
@@ -726,7 +852,9 @@ document.addEventListener("keydown",function(e){
   var t=e.target.tagName;
   if(t==="INPUT"||t==="TEXTAREA")return;
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="z"){e.preventDefault();undo();return;}
-  if(e.key==="Escape"){ if(S.draft){S.draft=null;draw();idleHint()} else {S.sel=null;sync();draw()} return; }
+  if(e.key==="Escape"){
+    if(!cPop.hidden||!wPop.hidden){closePops();return;}
+    if(S.draft){S.draft=null;draw();idleHint()} else {S.sel=null;sync();draw()} return; }
   if(e.key==="Enter"&&S.draft){e.preventDefault();closeDraft();return;}
   if(e.key==="Backspace"&&S.draft&&S.draft.pts.length){e.preventDefault();stepBack();return;}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){
@@ -860,41 +988,12 @@ $("boardTitle").addEventListener("input",savePref);
 $("optHeader").addEventListener("change",savePref);
 $("optLegend").addEventListener("change",savePref);
 
-/* ---------- sample ---------- */
-var SAMPLE='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">'+
-'<rect width="1200" height="800" fill="#EBF0E9"/>'+
-'<path d="M0 0H1200V250C940 320 720 190 520 265 340 330 160 255 0 320Z" fill="#CFE2CB"/>'+
-'<path d="M840 540C960 500 1090 575 1200 545V800H860Z" fill="#D8E8D3"/>'+
-'<path d="M0 640C140 610 240 690 330 800H0Z" fill="#D8E8D3"/>'+
-'<rect x="170" y="300" width="630" height="340" rx="12" fill="#DCE0E4"/>'+
-'<rect x="770" y="330" width="270" height="215" rx="12" fill="#DCE0E4"/>'+
-'<rect x="360" y="650" width="420" height="130" rx="12" fill="#E2E5E9"/>'+
-'<path d="M40 110C180 250 140 415 265 515 365 595 345 715 305 800" stroke="#A9CCE9" stroke-width="36" fill="none" stroke-linecap="round"/>'+
-'<g stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round">'+
-'<path d="M0 430H1200"/><path d="M430 250V800"/><path d="M710 300V770"/><path d="M175 565H1030"/><path d="M950 250V800"/></g>'+
-'<g stroke="#F0C87C" stroke-width="6" fill="none" stroke-linecap="round">'+
-'<path d="M110 800C300 615 520 555 790 465 965 405 1085 330 1200 300"/></g>'+
-'<g fill="#8D99A8" font-family="sans-serif" font-size="17">'+
-'<text x="290" y="355">北屯區</text><text x="545" y="470">中央商圈</text>'+
-'<text x="835" y="390">科技園區</text><text x="470" y="705">南港站</text></g>'+
-'<text x="1178" y="786" fill="#A6B1BE" font-family="sans-serif" font-size="13" text-anchor="end">示範底圖 · ⌘V 換成你的截圖</text>'+
-'</svg>';
-
 function boot(){
   loadStore();
   setTool(S.tool);
-  if(!S.people.length){
-    S.people=[{name:"林昱辰",color:PALETTE[0]},{name:"陳美如",color:PALETTE[1]},{name:"王柏翰",color:PALETTE[2]}];
-  }
-  S.active=S.people[0]?S.people[0].name:null;
-  S.shapes=[
-    {id:"s1",pts:[[185,315],[420,300],[430,430],[395,560],[180,555]],name:"北屯",who:S.people[0].name,lp:null},
-    {id:"s2",pts:[[445,300],[700,300],[705,560],[450,560]],name:"",who:S.people[1]?S.people[1].name:"",lp:null},
-    {id:"s3",pts:[[770,330],[1040,335],[1045,545],[930,560],[765,545]],name:"科技園區",who:S.people[2]?S.people[2].name:"",lp:null},
-    {id:"s4",pts:[[365,655],[775,652],[778,778],[368,778]],name:"南港站",who:S.people[1]?S.people[1].name:"",lp:null}
-  ];
-  loadImage("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(SAMPLE),true);
-  sync(); refreshUndo();
+  S.shapes=[]; S.sel=null; S.active=null;
+  cv.hidden=true; empty.hidden=false;
+  sync(); refreshUndo(); setReady();
 }
 boot();
 if(window.ResizeObserver)new ResizeObserver(function(){fit();if(!inl.hidden)hideInline()}).observe(stage);
