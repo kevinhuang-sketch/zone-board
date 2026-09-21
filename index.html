@@ -11,7 +11,7 @@
   --bg:#EDF1F7; --surface:#FFFFFF; --surface-2:#F5F8FC; --stage:#DDE4EE;
   --ink:#16233A; --muted:#5B6B85; --line:#D2DCEA; --line-2:#B7C6DA;
   --primary:#1E40AF; --on-primary:#FFFFFF; --primary-soft:#E4EBFA;
-  --accent:#B65C06; --danger:#C42121;
+  --accent:#B65C06; --accent-soft:#FAEBD8; --danger:#C42121;
   --shadow:0 1px 2px rgba(22,35,58,.07), 0 6px 18px rgba(22,35,58,.06);
   --r:7px; --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:24px;
 }
@@ -19,14 +19,14 @@
   --bg:#0D1520; --surface:#16202E; --surface-2:#1B2735; --stage:#080D15;
   --ink:#E4EBF5; --muted:#93A6BF; --line:#2A394D; --line-2:#3C4F69;
   --primary:#6C99F2; --on-primary:#0A1017; --primary-soft:#1D2C45;
-  --accent:#E2A048; --danger:#F0736B;
+  --accent:#E2A048; --accent-soft:#3A2A11; --danger:#F0736B;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.35);
 }}
 :root[data-theme="dark"]{
   --bg:#0D1520; --surface:#16202E; --surface-2:#1B2735; --stage:#080D15;
   --ink:#E4EBF5; --muted:#93A6BF; --line:#2A394D; --line-2:#3C4F69;
   --primary:#6C99F2; --on-primary:#0A1017; --primary-soft:#1D2C45;
-  --accent:#E2A048; --danger:#F0736B;
+  --accent:#E2A048; --accent-soft:#3A2A11; --danger:#F0736B;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.35);
 }
 html,body{height:100%}
@@ -65,7 +65,7 @@ img{max-width:100%}
 .btn.sm{min-height:26px;font-size:12px;padding:0 9px}
 .btn svg{width:15px;height:15px;flex:none}
 
-.split{display:grid;grid-template-columns:1fr 300px;min-height:0}
+.split{display:grid;grid-template-columns:1fr 320px;min-height:0}
 .stage{position:relative;background:var(--stage);min-height:0;overflow:auto;
   display:grid;place-items:center;padding:var(--sp4)}
 .stage.drop{outline:2px dashed var(--primary);outline-offset:-8px}
@@ -98,33 +98,40 @@ img{max-width:100%}
 .muted-note{font-size:12px;color:var(--muted);margin:var(--sp2) 0 0}
 
 .people{display:flex;flex-direction:column;gap:5px}
-.prow{display:flex;align-items:center;gap:var(--sp2);width:100%;
-  padding:5px 6px 5px 8px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:var(--r);transition:.13s;min-height:36px}
+.prow{display:flex;align-items:center;gap:6px;width:100%;
+  padding:4px 6px 4px 6px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r);transition:.13s;min-height:42px;cursor:pointer}
 .prow:hover{border-color:var(--line-2)}
 .prow[aria-current="true"]{border-color:var(--ink);background:var(--primary-soft)}
-.prow[aria-current="true"] .pick{font-weight:700}
-.pick{flex:1;min-width:0;display:flex;align-items:center;gap:var(--sp2);
-  background:none;border:0;padding:0;text-align:left;font-size:13px;overflow:hidden}
-.pick .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{width:13px;height:13px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.2)}
-.dotbtn{width:26px;height:26px;flex:none;display:grid;place-items:center;padding:0;
-  background:transparent;border:1px solid transparent;border-radius:6px}
-.dotbtn::before{content:"";width:14px;height:14px;border-radius:4px;
+.dotbtn{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;
+  gap:1px;padding:0;background:transparent;border:1px solid transparent;border-radius:6px}
+.dotbtn i{width:13px;height:13px;border-radius:4px;flex:none;
   background:var(--c,#64748B);border:1px solid rgba(0,0,0,.22)}
+.dotbtn svg{width:11px;height:11px;color:var(--muted)}
 .dotbtn:hover{background:var(--surface);border-color:var(--line-2)}
-.pname,.zname{flex:1;min-width:0;background:transparent;border:1px solid transparent;
-  border-radius:5px;padding:3px 6px;font-size:13px;font-weight:500;cursor:pointer;
+.dotbtn:hover svg{color:var(--ink)}
+.pname{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+  border-radius:5px;padding:4px 6px;font-size:13px;font-weight:500;cursor:pointer;
   text-overflow:ellipsis;transition:background .12s,border-color .12s}
-.pname:hover,.zname:hover{background:var(--surface);border-color:var(--line)}
+.prow[aria-current="true"] .pname{font-weight:700}
+.zname{width:100%;min-width:0;background:var(--surface);border:1px solid var(--line);
+  border-radius:5px;padding:4px 7px;font-size:13px;font-weight:500;cursor:text;
+  text-overflow:ellipsis;transition:border-color .12s,box-shadow .12s}
+.zname:hover{border-color:var(--line-2)}
 .pname:not([readonly]),.zname:not([readonly]){cursor:text;background:var(--surface);
   border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
-.prow[aria-current="true"] .pname{font-weight:700}
 .zname::placeholder{color:var(--muted);font-weight:400}
-.zmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.zwho{font-size:11.5px;color:var(--muted);padding:0 7px;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis}
-.zwho.none{color:var(--accent)}
+.whobtn{display:inline-flex;align-items:center;gap:6px;min-height:26px;
+  margin-top:4px;padding:2px 7px 2px 6px;font-size:12px;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:99px;
+  max-width:100%;overflow:hidden;transition:.13s}
+.whobtn:hover{border-color:var(--primary);background:var(--primary-soft)}
+.whobtn .wn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whobtn svg{width:12px;height:12px;color:var(--muted);flex:none}
+.whobtn.none{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.whobtn.none svg{color:var(--accent)}
+.whobtn.none:hover{filter:brightness(.97)}
 .pop{position:fixed;z-index:80;padding:9px;background:var(--surface);
   border:1px solid var(--line-2);border-radius:10px;box-shadow:0 14px 34px rgba(10,18,32,.32);
   display:grid;grid-template-columns:repeat(5,auto);gap:6px}
@@ -135,13 +142,18 @@ img{max-width:100%}
   background:transparent;border:1px solid transparent;border-radius:6px;font-size:13px;text-align:left}
 .pwho:hover{background:var(--surface-2);border-color:var(--line)}
 .pwho[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);font-weight:600}
-.ct{font-family:"Fira Code",monospace;font-size:11px;color:var(--muted);flex:none}
-.on{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--primary);flex:none}
-.iconbtn{width:26px;height:26px;display:grid;place-items:center;flex:none;
-  background:transparent;border:1px solid transparent;border-radius:5px;color:var(--muted)}
+.pwho.danger{color:var(--danger)}
+.pwho.danger:hover{background:var(--surface-2);border-color:var(--danger)}
+.ct{font-family:"Fira Code",monospace;font-size:11px;color:var(--muted);flex:none;
+  min-width:14px;text-align:right}
+.on{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--primary);flex:none;
+  min-width:38px;text-align:right}
+.on.off{visibility:hidden}
+.iconbtn{width:32px;height:32px;display:grid;place-items:center;flex:none;
+  background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted)}
 .iconbtn:hover{background:var(--surface);border-color:var(--line-2);color:var(--ink)}
 .iconbtn.del:hover{color:var(--danger);border-color:var(--danger)}
-.iconbtn svg{width:14px;height:14px}
+.iconbtn svg{width:15px;height:15px}
 .addform{display:flex;gap:5px;margin-top:6px}
 .addform input{flex:1;min-width:0;padding:5px 9px;background:var(--surface-2);
   border:1px solid var(--line);border-radius:var(--r)}
@@ -159,17 +171,22 @@ img{max-width:100%}
 .tool[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);font-weight:600}
 .tool svg{width:17px;height:17px}
 
-.list{display:flex;flex-direction:column;gap:4px}
-.zrow{display:flex;align-items:center;gap:var(--sp2);width:100%;
-  padding:4px 6px 4px 8px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:var(--r);transition:.13s;min-height:34px}
-.zrow:hover{border-color:var(--line-2)}
+.list{display:flex;flex-direction:column;gap:5px}
+.zrow{display:flex;flex-direction:column;align-items:stretch;width:100%;
+  padding:5px 6px 6px 8px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r);transition:.13s;cursor:pointer}
+.zrow:hover{border-color:var(--line-2);background:var(--surface)}
 .zrow[aria-current="true"]{border-color:var(--primary);box-shadow:inset 3px 0 0 var(--primary)}
-.zrow .nm{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left;overflow:hidden}
-.zrow .nm b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.zrow .nm small{font-size:11.5px;color:var(--muted)}
-.zrow .nm small.none{color:var(--accent)}
+.zline{display:flex;align-items:center;gap:4px}
+.zline .zwrap{flex:1;min-width:0}
 
+.restore{display:flex;align-items:flex-start;gap:9px;text-align:left;
+  margin:0 auto var(--sp4);max-width:330px;padding:10px 12px;
+  background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r)}
+.restore svg{width:17px;height:17px;color:var(--accent);flex:none;margin-top:1px}
+.restore .rt{flex:1;min-width:0;font-size:12.5px;color:var(--ink);line-height:1.5}
+.restore .rt b{color:var(--accent)}
+.restore button{margin-top:6px;margin-right:6px}
 .opt{display:flex;align-items:center;gap:var(--sp2);font-size:13px;padding:3px 0;cursor:pointer}
 .opt input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
 .stack{display:flex;flex-direction:column;gap:var(--sp2)}
@@ -224,6 +241,13 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
         <p><span class="kbd">⌘V</span> / <span class="kbd">Ctrl V</span> 直接貼上,或把圖檔拖進來。<br>
         底圖只留在你的瀏覽器裡,不會上傳到任何地方。</p>
         <button class="btn pri" id="btnOpen2">選擇圖片檔</button>
+      </div>
+      <div class="restore" id="restoreBar" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        <div class="rt">
+          <span id="restoreTxt"></span>
+          <button class="btn sm" id="btnDiscard">丟棄這些區</button>
+        </div>
       </div>
       <canvas id="cv" hidden tabindex="0" aria-label="分區畫布"></canvas>
       <div class="hint" id="hint" hidden></div>
@@ -291,6 +315,7 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
 
 <div id="colorPop" class="pop" hidden role="dialog" aria-label="選顏色"></div>
 <div id="whoPop" class="pop pop-list" hidden role="dialog" aria-label="選負責人"></div>
+<div id="menuPop" class="pop pop-list" hidden role="menu" aria-label="區塊選單"></div>
 
 <input type="file" id="fileIn" accept="image/*" hidden>
 
@@ -298,17 +323,17 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
 (function(){
 "use strict";
 var PALETTE=["#E11D48","#2563EB","#059669","#D97706","#7C3AED","#0891B2","#DB2777","#65A30D","#4F46E5","#EA580C"];
-var LS_ROSTER="zoneboard.roster.v2", LS_PREF="zoneboard.pref.v2";
+var LS_ROSTER="zoneboard.roster.v2", LS_PREF="zoneboard.pref.v2", LS_WORK="zoneboard.work.v1";
 
 var S={img:null,iw:0,ih:0,shapes:[],people:[],active:null,
-        tool:"poly",draft:null,sel:null,drag:null,editZone:null,editPerson:null,pendColor:null};
+        tool:"poly",draft:null,sel:null,drag:null,hl:null,clean:true,pending:null};
 var undoStack=[];
 
 var $=function(id){return document.getElementById(id)};
 var cv=$("cv"), ctx=cv.getContext("2d"), stage=$("stage"), empty=$("empty"), hint=$("hint");
 var inl=$("inlineName");
 var dlgO=$("dlgOut");
-var cPop=$("colorPop"), wPop=$("whoPop"), cPopFor=null, wPopFor=null;
+var cPop=$("colorPop"), wPop=$("whoPop"), mPop=$("menuPop"), cPopFor=null, wPopFor=null, mPopFor=null;
 
 /* ---------- geometry ---------- */
 function centroid(p){var a=0,x=0,y=0;for(var i=0;i<p.length;i++){var j=(i+1)%p.length;
@@ -369,6 +394,25 @@ function zoneCount(n){return S.shapes.filter(function(s){return s.who===n}).leng
 
 /* ---------- storage (roster + prefs only) ---------- */
 function saveRoster(){try{localStorage.setItem(LS_ROSTER,JSON.stringify(S.people))}catch(e){}}
+var workTimer=null;
+function saveWork(){
+  S.clean=false;
+  clearTimeout(workTimer);
+  workTimer=setTimeout(function(){
+    try{
+      if(!S.shapes.length){localStorage.removeItem(LS_WORK);return;}
+      localStorage.setItem(LS_WORK,JSON.stringify({
+        shapes:shapeCopy(),iw:S.iw,ih:S.ih,at:Date.now(),
+        title:$("boardTitle").value}));
+    }catch(e){}
+  },400);
+}
+function loadWork(){try{var w=JSON.parse(localStorage.getItem(LS_WORK)||"null");
+  return (w&&w.shapes&&w.shapes.length)?w:null;}catch(e){return null}}
+function clearWork(){S.clean=true;try{localStorage.removeItem(LS_WORK)}catch(e){}}
+window.addEventListener("beforeunload",function(e){
+  if(S.shapes.length&&!S.clean){e.preventDefault();e.returnValue="";}
+});
 function savePref(){try{localStorage.setItem(LS_PREF,JSON.stringify({
   title:$("boardTitle").value,header:$("optHeader").checked,legend:$("optLegend").checked,tool:S.tool}))}catch(e){}}
 function loadStore(){
@@ -470,6 +514,21 @@ function draw(){
   cv.width=S.iw; cv.height=S.ih;
   ctx.drawImage(S.img,0,0,S.iw,S.ih);
   S.shapes.forEach(function(s){paintShape(ctx,s,s.id===S.sel)});
+  if(S.hl){
+    var h=S.shapes.filter(function(x){return x.id===S.hl})[0];
+    if(h){
+      var hu=unit(), hc=colorOf(h);
+      ctx.save();
+      ctx.beginPath();
+      h.pts.forEach(function(q,i){i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});
+      ctx.closePath();
+      ctx.fillStyle=hc; ctx.globalAlpha=.22; ctx.fill(); ctx.globalAlpha=1;
+      ctx.setLineDash([11*hu,7*hu]);
+      ctx.strokeStyle="#fff"; ctx.lineWidth=6.5*hu; ctx.stroke();
+      ctx.strokeStyle=hc; ctx.lineWidth=3.4*hu; ctx.stroke();
+      ctx.restore();
+    }
+  }
   S.shapes.forEach(function(s){paintLabel(ctx,s)});
   if(S.draft&&S.draft.pts.length){
     var u=unit(), p=S.draft.pts;
@@ -540,7 +599,7 @@ cv.addEventListener("pointerdown",function(e){
   if(lab&&!S.draft){
     S.sel=lab.id; sync(); draw();
     S.drag={shape:lab,from:pt,orig:labelAt(lab).slice(),moved:false};
-    cv.setPointerCapture(e.pointerId); cv.classList.add("move");
+    cv.setPointerCapture(e.pointerId); cv.style.cursor="grabbing";
     showHint("拖曳移動標籤 · 放開後雙擊可改名"); return;
   }
   if(S.tool==="poly"){
@@ -557,6 +616,7 @@ cv.addEventListener("pointerdown",function(e){
 
 cv.addEventListener("pointermove",function(e){
   if(!S.img)return; var pt=toImg(e);
+  if(!S.drag&&!S.draft){ cv.style.cursor = hitLabel(pt) ? "grab" : "crosshair"; }
   if(S.drag){ S.drag.moved=true;
     S.drag.shape.lp=[S.drag.orig[0]+(pt[0]-S.drag.from[0]),S.drag.orig[1]+(pt[1]-S.drag.from[1])];
     draw(); return; }
@@ -568,14 +628,22 @@ cv.addEventListener("pointermove",function(e){
   if(Math.hypot(pt[0]-l[0],pt[1]-l[1])>3*unit()){S.draft.pts.push(pt);draw();}
 });
 function endPointer(){
-  if(S.drag){ if(S.drag.moved)snap();
-    S.drag=null; cv.classList.remove("move"); idleHint(); return; }
+  if(S.drag){ if(S.drag.moved){snap();saveWork();syncZones();}
+    S.drag=null; cv.style.cursor="crosshair"; idleHint(); return; }
   if(!S.draft||S.draft.type==="poly")return;
   if(S.draft.type==="free"&&S.draft.pts.length>4)S.draft.pts=simplify(S.draft.pts,6*unit());
   closeDraft();
 }
 cv.addEventListener("pointerup",endPointer);
 cv.addEventListener("pointercancel",endPointer);
+cv.addEventListener("contextmenu",function(e){
+  if(!S.img)return;
+  var z=hitLabel(toImg(e))||hitShape(toImg(e));
+  if(!z)return;
+  e.preventDefault();
+  S.sel=z.id; syncZones(); draw();
+  openMenuPop(e.clientX,e.clientY,z.id);
+});
 cv.addEventListener("dblclick",function(e){
   var pt=toImg(e);
   if(S.draft&&S.draft.type==="poly"){closeDraft();return;}
@@ -608,7 +676,29 @@ function shapeRect(s){
   var x=r.left+q[0]*k, y=r.top+q[1]*k;
   return {left:x-14,right:x+14,top:y-16,bottom:y+16};
 }
-function closePops(){ cPop.hidden=true; wPop.hidden=true; cPopFor=null; wPopFor=null; }
+function closePops(){ cPop.hidden=true; wPop.hidden=true; mPop.hidden=true;
+  cPopFor=null; wPopFor=null; mPopFor=null; }
+var MENU=[{a:"renz",t:"\u6539\u540d"},{a:"who",t:"\u63db\u8ca0\u8cac\u4eba"},
+          {a:"center",t:"\u6a19\u7c64\u56de\u5230\u4e2d\u5fc3",needLp:true},
+          {a:"del",t:"\u522a\u9664\u6b64\u5340",danger:true}];
+function openMenuPop(x,y,id){
+  var z=S.shapes.filter(function(q){return q.id===id})[0]; if(!z)return;
+  cPop.hidden=true; wPop.hidden=true; mPopFor=id;
+  mPop.innerHTML=MENU.filter(function(m){return !m.needLp||z.lp})
+    .map(function(m){return '<button type="button" class="pwho'+(m.danger?" danger":"")+
+      '" data-a="'+m.a+'">'+m.t+'</button>';}).join("");
+  placePop(mPop,{left:x,right:x,top:y,bottom:y});
+  var f=mPop.querySelector(".pwho"); if(f)f.focus();
+}
+mPop.addEventListener("click",function(e){
+  var b=e.target.closest(".pwho"); if(!b||!mPopFor)return;
+  var id=mPopFor, z=S.shapes.filter(function(q){return q.id===id})[0];
+  var a=b.dataset.a; closePops(); if(!z)return;
+  if(a==="renz"){ showInline(z); }
+  else if(a==="who"){ openWhoPop(shapeRect(z),id); }
+  else if(a==="center"){ snap(); z.lp=null; draw(); syncZones(); }
+  else if(a==="del"){ delZone(id); }
+});
 
 function openColorPop(r,name){
   var p=byName(name); if(!p)return;
@@ -645,13 +735,13 @@ wPop.addEventListener("click",function(e){
   if(s2){ snap(); s2.who=b.dataset.n; draw(); sync(); }
   closePops();
 });
-[cPop,wPop].forEach(function(el){
+[cPop,wPop,mPop].forEach(function(el){
   el.addEventListener("keydown",function(e){
     if(e.key==="Escape"){e.stopPropagation();closePops();cv.focus();}
   });
 });
 document.addEventListener("pointerdown",function(e){
-  if(cPop.hidden&&wPop.hidden)return;
+  if(cPop.hidden&&wPop.hidden&&mPop.hidden)return;
   if(e.target.closest(".pop")||e.target.closest(".dotbtn"))return;
   closePops();
 },true);
@@ -659,10 +749,19 @@ window.addEventListener("resize",closePops);
 
 /* ---------- inline rename ---------- */
 function startEdit(input){ input.readOnly=false; input.focus(); input.select(); }
+function delZone(id){
+  var z=S.shapes.filter(function(q){return q.id===id})[0]; if(!z)return;
+  var label=(z.name||"").trim()||z.who||"\u9019\u584a";
+  snap(); S.shapes=S.shapes.filter(function(q){return q.id!==id});
+  S.sel=null; S.hl=null; closePops(); hideInline(); draw(); sync();
+  showHint("\u5df2\u522a\u9664 <b>"+esc(label)+"</b> \u00b7 \u2318Z \u53ef\u5fa9\u539f");
+}
 function endPersonEdit(input,keep){
   input.readOnly=true;
   var old=input.dataset.n, nn=input.value.trim();
-  if(!keep||!nn||nn===old){ input.value=old; return; }
+  if(!keep){ input.value=old; return; }
+  if(!nn){ input.value=old; showHint("\u540d\u5b57\u4e0d\u80fd\u662f\u7a7a\u7684"); return; }
+  if(nn===old){ input.value=old; return; }
   if(byName(nn)){ input.value=old; showHint("已經有一個叫 <b>"+esc(nn)+"</b> 的人了"); return; }
   var p=byName(old); if(!p){ input.value=old; return; }
   snap();
@@ -684,6 +783,8 @@ function endZoneEdit(input,keep){
 }
 
 /* ---------- rail ---------- */
+var CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+var PENCIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
 var TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>';
 var TARGET='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>';
 
@@ -692,14 +793,17 @@ function syncPeople(){
   $("pNote").hidden=S.people.length>0 && !!S.active;
   $("peopleList").innerHTML=S.people.map(function(p){
     var n=zoneCount(p.name), on=p.name===S.active, e=esc(p.name);
-    return '<div class="prow" aria-current="'+on+'">'+
+    return '<div class="prow" data-act="pick" data-n="'+e+'" aria-current="'+on+'" '+
+        'title="\u9ede\u4e00\u4e0b\u8a2d\u70ba\u76ee\u524d\u6307\u6d3e\u5c0d\u8c61">'+
       '<button class="dotbtn" data-act="color" data-n="'+e+'" style="--c:'+p.color+'" '+
-        'aria-haspopup="true" title="換顏色" aria-label="換 '+e+' 的顏色"></button>'+
+        'aria-haspopup="true" title="\u63db\u984f\u8272" aria-label="\u63db '+e+' \u7684\u984f\u8272">'+
+        '<i></i>'+CHEV+'</button>'+
       '<input class="pname" data-act="pick" data-n="'+e+'" value="'+e+'" readonly '+
-        'aria-label="負責人 '+e+'" title="點一下設為目前指派對象 · 雙擊改名">'+
-      (on?'<span class="on">畫這個</span>':'')+
+        'aria-label="\u8ca0\u8cac\u4eba '+e+'">'+
+      '<span class="on'+(on?"":" off")+'">\u756b\u9019\u500b</span>'+
       '<span class="ct">'+n+'</span>'+
-      '<button class="iconbtn del" data-act="delp" data-n="'+e+'" title="移除此人" aria-label="移除 '+e+'">'+TRASH+'</button>'+
+      '<button class="iconbtn" data-act="renp" data-n="'+e+'" title="\u6539\u540d" aria-label="\u6539 '+e+' \u7684\u540d\u5b57">'+PENCIL+'</button>'+
+      '<button class="iconbtn del" data-act="delp" data-n="'+e+'" title="\u79fb\u9664\u6b64\u4eba" aria-label="\u79fb\u9664 '+e+'">'+TRASH+'</button>'+
     '</div>';
   }).join("");
 }
@@ -709,19 +813,23 @@ function syncZones(){
   $("zoneEmpty").hidden=S.shapes.length>0;
   $("zoneBtns").hidden=S.shapes.length===0;
   $("zoneList").innerHTML=S.shapes.map(function(s){
-    var who=s.who?esc(s.who):"未指派";
-    return '<div class="zrow" data-id="'+s.id+'" aria-current="'+(s.id===S.sel)+'">'+
-      '<button class="dotbtn" data-act="who" data-id="'+s.id+'" style="--c:'+colorOf(s)+'" '+
-        'aria-haspopup="true" title="換負責人" aria-label="換這一區的負責人"></button>'+
-      '<div class="zmain">'+
-        '<input class="zname" data-act="sel" data-id="'+s.id+'" value="'+esc(s.name||"")+'" readonly '+
-          'placeholder="未命名" aria-label="區域名稱" title="點一下選取 · 雙擊改名">'+
-        '<span class="zwho'+(s.who?"":" none")+'">'+who+'</span>'+
+    var un=!s.who, who=un?"\u672a\u6307\u6d3e":esc(s.who);
+    return '<div class="zrow" data-act="sel" data-id="'+s.id+'" aria-current="'+(s.id===S.sel)+'">'+
+      '<div class="zline">'+
+        '<span class="zwrap"><input class="zname" data-act="zedit" data-id="'+s.id+'" '+
+          'value="'+esc(s.name||"")+'" readonly placeholder="\u672a\u547d\u540d" '+
+          'aria-label="\u5340\u57df\u540d\u7a31" title="\u9ede\u4e00\u4e0b\u6539\u540d"></span>'+
+        '<button class="iconbtn" data-act="renz" data-id="'+s.id+'" title="\u6539\u540d" aria-label="\u6539\u5340\u57df\u540d\u7a31">'+PENCIL+'</button>'+
+        (s.lp?'<button class="iconbtn" data-act="center" data-id="'+s.id+'" title="\u6a19\u7c64\u56de\u5230\u4e2d\u5fc3" aria-label="\u6a19\u7c64\u56de\u5230\u4e2d\u5fc3">'+TARGET+'</button>':'')+
+        '<button class="iconbtn del" data-act="del" data-id="'+s.id+'" title="\u522a\u9664\u6b64\u5340" aria-label="\u522a\u9664\u6b64\u5340">'+TRASH+'</button>'+
       '</div>'+
-      '<button class="iconbtn" data-act="center" data-id="'+s.id+'" title="標籤回到中心" aria-label="標籤回到中心">'+TARGET+'</button>'+
-      '<button class="iconbtn del" data-act="del" data-id="'+s.id+'" title="刪除此區" aria-label="刪除此區">'+TRASH+'</button>'+
+      '<button class="whobtn'+(un?" none":"")+'" data-act="who" data-id="'+s.id+'" '+
+        'aria-haspopup="true" title="\u63db\u8ca0\u8cac\u4eba">'+
+        (un?'':'<span class="dot" style="background:'+colorOf(s)+'"></span>')+
+        '<span class="wn">'+who+'</span>'+CHEV+'</button>'+
     '</div>';
   }).join("");
+  saveWork();
 }
 function sync(){ syncPeople(); syncZones(); idleHint(); }
 
@@ -729,8 +837,11 @@ $("peopleList").addEventListener("click",function(e){
   var b=e.target.closest("[data-act]"); if(!b)return;
   var a=b.dataset.act;
   if(a==="color"){ openColorPop(b.getBoundingClientRect(),b.dataset.n); }
+  else if(a==="renp"){
+    var inp=b.closest(".prow").querySelector(".pname"); if(inp)startEdit(inp);
+  }
   else if(a==="pick"){
-    if(!b.readOnly)return;
+    if(b.tagName==="INPUT"&&!b.readOnly)return;
     S.active = S.active===b.dataset.n ? null : b.dataset.n;
     sync(); draw();
   }
@@ -738,11 +849,11 @@ $("peopleList").addEventListener("click",function(e){
     var nm=b.dataset.n, n=zoneCount(nm);
     snap();
     S.shapes.forEach(function(x){ if(x.who===nm)x.who="" });
-    S.people=S.people.filter(function(p){return p.name!==nm});
+    S.people=S.people.filter(function(q){return q.name!==nm});
     if(S.active===nm)S.active=null;
     saveRoster(); closePops(); draw(); sync();
-    showHint(n ? "已移除 <b>"+esc(nm)+"</b>,他的 "+n+" 塊區變成未指派 · ⌘Z 可復原"
-               : "已移除 <b>"+esc(nm)+"</b> · ⌘Z 可復原");
+    showHint(n ? "\u5df2\u79fb\u9664 <b>"+esc(nm)+"</b>\uff0c\u4ed6\u7684 "+n+" \u584a\u5340\u8b8a\u6210\u672a\u6307\u6d3e \u00b7 \u2318Z \u53ef\u5fa9\u539f"
+               : "\u5df2\u79fb\u9664 <b>"+esc(nm)+"</b> \u00b7 \u2318Z \u53ef\u5fa9\u539f");
   }
 });
 $("peopleList").addEventListener("dblclick",function(e){
@@ -783,24 +894,32 @@ $("newPerson").addEventListener("keydown",function(e){
   else f.dispatchEvent(new Event("submit",{cancelable:true,bubbles:true}));
 });
 $("zoneList").addEventListener("click",function(e){
-  var b=e.target.closest("[data-act]"); var row=e.target.closest(".zrow");
-  if(!b){ if(row){S.sel=row.dataset.id;syncZones();draw();} return; }
-  var s=S.shapes.filter(function(x){return x.id===b.dataset.id})[0]; if(!s)return;
-  var a=b.dataset.act;
-  if(a==="who"){ openWhoPop(b.getBoundingClientRect(),s.id); }
-  else if(a==="sel"){ if(!b.readOnly)return; S.sel=s.id; syncZones(); draw(); }
-  else if(a==="center"){ snap(); s.lp=null; draw(); }
-  else if(a==="del"){ snap(); S.shapes=S.shapes.filter(function(x){return x.id!==s.id});
-    S.sel=null; closePops(); draw(); sync(); }
-});
-$("zoneList").addEventListener("dblclick",function(e){
-  var i2=e.target.closest(".zname"); if(i2)startEdit(i2);
+  var b=e.target.closest("[data-act]"); if(!b)return;
+  var a=b.dataset.act, id=b.dataset.id;
+  var z=S.shapes.filter(function(x){return x.id===id})[0]; if(!z)return;
+  if(a==="who"){ openWhoPop(b.getBoundingClientRect(),id); }
+  else if(a==="renz"){
+    var inp=b.closest(".zrow").querySelector(".zname"); if(inp)startEdit(inp);
+  }
+  else if(a==="zedit"){
+    if(!b.readOnly)return;
+    if(S.sel!==id){
+      S.sel=id; draw();
+      [].forEach.call($("zoneList").querySelectorAll(".zrow"),function(rw){
+        rw.setAttribute("aria-current",String(rw.dataset.id===id));
+      });
+    }
+    startEdit(b);
+  }
+  else if(a==="sel"){ S.sel=id; syncZones(); draw(); }
+  else if(a==="center"){ snap(); z.lp=null; draw(); syncZones(); }
+  else if(a==="del"){ delZone(id); }
 });
 $("zoneList").addEventListener("keydown",function(e){
   var i2=e.target.closest(".zname"); if(!i2)return;
   e.stopPropagation();
   if(i2.readOnly){
-    if(e.key==="Enter"){e.preventDefault();i2.click();}
+    if(e.key==="Enter"){e.preventDefault();startEdit(i2);}
     else if(e.key==="F2"){e.preventDefault();startEdit(i2);}
     return;
   }
@@ -809,6 +928,13 @@ $("zoneList").addEventListener("keydown",function(e){
 });
 $("zoneList").addEventListener("focusout",function(e){
   var i2=e.target.closest(".zname"); if(i2&&!i2.readOnly){endZoneEdit(i2,true);syncZones();}
+});
+$("zoneList").addEventListener("mouseover",function(e){
+  var row=e.target.closest(".zrow"); var id=row?row.dataset.id:null;
+  if(id!==S.hl){ S.hl=id; draw(); }
+});
+$("zoneList").addEventListener("mouseleave",function(){
+  if(S.hl){ S.hl=null; draw(); }
 });
 $("btnClearWho").addEventListener("click",function(){
   snap(); S.shapes.forEach(function(s){s.who=""}); draw(); sync();});
@@ -822,9 +948,22 @@ $("btnUndo2").addEventListener("click",function(){stepBack();cv.focus()});
 /* ---------- image in ---------- */
 function loadImage(src,seed){
   var im=new Image();
+  im.onerror=function(){ showHint("\u9019\u5f35\u5716\u8b80\u4e0d\u9032\u4f86 \u00b7 \u63db\u4e00\u5f35\u8a66\u8a66"); };
   im.onload=function(){
     S.img=im; S.iw=im.naturalWidth; S.ih=im.naturalHeight;
-    if(!seed){ if(S.shapes.length)snap(); S.shapes=[]; S.sel=null; }
+    if(S.pending){
+      var w=S.pending, kx=S.iw/(w.iw||S.iw), ky=S.ih/(w.ih||S.ih);
+      if(S.shapes.length)snap();
+      S.shapes=w.shapes.map(function(z){
+        return {id:z.id,name:z.name,who:z.who,
+                pts:z.pts.map(function(q){return [q[0]*kx,q[1]*ky]}),
+                lp:z.lp?[z.lp[0]*kx,z.lp[1]*ky]:null};
+      });
+      S.pending=null; S.sel=null; $("restoreBar").hidden=true;
+      setTimeout(function(){
+        showHint("\u5df2\u9084\u539f <b>"+S.shapes.length+"</b> \u584a\u5340 \u00b7 \u2318Z \u53ef\u5fa9\u539f");
+      },60);
+    } else if(!seed){ if(S.shapes.length)snap(); S.shapes=[]; S.sel=null; }
     hideInline(); empty.hidden=true; cv.hidden=false;
     setReady(); fit(); draw(); sync();
   };
@@ -853,7 +992,7 @@ document.addEventListener("keydown",function(e){
   if(t==="INPUT"||t==="TEXTAREA")return;
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="z"){e.preventDefault();undo();return;}
   if(e.key==="Escape"){
-    if(!cPop.hidden||!wPop.hidden){closePops();return;}
+    if(!cPop.hidden||!wPop.hidden||!mPop.hidden){closePops();return;}
     if(S.draft){S.draft=null;draw();idleHint()} else {S.sel=null;sync();draw()} return; }
   if(e.key==="Enter"&&S.draft){e.preventDefault();closeDraft();return;}
   if(e.key==="Backspace"&&S.draft&&S.draft.pts.length){e.preventDefault();stepBack();return;}
@@ -959,12 +1098,16 @@ $("btnSave").addEventListener("click",function(){
     (window.claude&&window.claude.use?window.claude.use("downloads"):Promise.resolve(null))
     .then(function(dl){
       if(!dl){
-        if(nativeSave(blob))$("outSub").textContent="已送出下載("+fname()+")。沒看到檔案的話,改用「複製到剪貼簿」。";
-        else $("outSub").textContent="這個環境不能直接存檔 —— 用「複製到剪貼簿」,或在預覽圖上按右鍵另存。";
+        if(nativeSave(blob)){
+          clearWork();
+          $("outSub").textContent="已送出下載("+fname()+")。沒看到檔案的話,改用「複製到剪貼簿」。";
+        } else {
+          $("outSub").textContent="這個環境不能直接存檔 —— 用「複製到剪貼簿」,或在預覽圖上按右鍵另存。";
+        }
         btn.disabled=false; return;
       }
       return dl.save({filename:fname(),data:blob}).then(function(){
-        $("outSub").textContent="已存檔。"; btn.disabled=false;});
+        $("outSub").textContent="已存檔。"; btn.disabled=false; clearWork();});
     })
     .catch(function(err){
       var c=err&&err.code;
@@ -979,6 +1122,7 @@ $("btnCopy").addEventListener("click",function(){
   outCanvas.toBlob(function(blob){
     try{
       navigator.clipboard.write([new ClipboardItem({"image/png":blob})]).then(function(){
+        clearWork();
         btn.textContent="已複製 ✓"; setTimeout(function(){btn.textContent="複製到剪貼簿"},1800);
       },function(){$("outSub").textContent="瀏覽器擋了剪貼簿 —— 請在預覽圖上按右鍵另存。"});
     }catch(e){$("outSub").textContent="這個瀏覽器不支援複製圖片 —— 請在預覽圖上按右鍵另存。"}
@@ -991,10 +1135,23 @@ $("optLegend").addEventListener("change",savePref);
 function boot(){
   loadStore();
   setTool(S.tool);
-  S.shapes=[]; S.sel=null; S.active=null;
+  S.shapes=[]; S.sel=null; S.active=null; S.clean=true;
   cv.hidden=true; empty.hidden=false;
+  var w=loadWork();
+  if(w){
+    S.pending=w;
+    var d=new Date(w.at||Date.now()), pad=function(n){return n<10?"0"+n:""+n};
+    $("restoreTxt").innerHTML="\u4e0a\u6b21\u6709 <b>"+w.shapes.length+
+      "</b> \u584a\u5340\u9084\u6c92\u532f\u51fa\uff08"+(d.getMonth()+1)+"/"+d.getDate()+" "+
+      pad(d.getHours())+":"+pad(d.getMinutes())+"\uff09\u3002\u8cbc\u4e0a\u4eca\u5929\u7684\u5e95\u5716\u5c31\u6703\u81ea\u52d5\u9084\u539f\u3002";
+    if(w.title&&!$("boardTitle").value)$("boardTitle").value=w.title;
+    $("restoreBar").hidden=false;
+  }
   sync(); refreshUndo(); setReady();
 }
+$("btnDiscard").addEventListener("click",function(){
+  S.pending=null; clearWork(); $("restoreBar").hidden=true;
+});
 boot();
 if(window.ResizeObserver)new ResizeObserver(function(){fit();if(!inl.hidden)hideInline()}).observe(stage);
 window.addEventListener("resize",fit);
