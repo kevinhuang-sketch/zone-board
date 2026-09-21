@@ -96,6 +96,10 @@ img{max-width:100%}
 .sec h3 .n{margin-left:auto;font-family:"Fira Code",monospace;letter-spacing:0;
   background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:0 6px}
 .muted-note{font-size:12px;color:var(--muted);margin:var(--sp2) 0 0}
+.saved{margin-left:auto;font-size:10px;font-weight:400;letter-spacing:0;
+  text-transform:none;color:var(--muted);opacity:0;transition:opacity .25s}
+.saved.on{opacity:1}
+.sec h3 .saved + .n{margin-left:6px}
 
 .people{display:flex;flex-direction:column;gap:5px}
 .prow{display:flex;align-items:center;gap:6px;width:100%;
@@ -183,10 +187,12 @@ img{max-width:100%}
 .restore{display:flex;align-items:flex-start;gap:9px;text-align:left;
   margin:0 auto var(--sp4);max-width:330px;padding:10px 12px;
   background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r)}
-.restore svg{width:17px;height:17px;color:var(--accent);flex:none;margin-top:1px}
+.restore #restoreThumb{width:74px;height:50px;object-fit:cover;flex:none;
+  border-radius:5px;border:1px solid var(--accent);background:var(--surface)}
+.racts{display:flex;gap:6px;margin-top:8px}
 .restore .rt{flex:1;min-width:0;font-size:12.5px;color:var(--ink);line-height:1.5}
 .restore .rt b{color:var(--accent)}
-.restore button{margin-top:6px;margin-right:6px}
+
 .opt{display:flex;align-items:center;gap:var(--sp2);font-size:13px;padding:3px 0;cursor:pointer}
 .opt input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
 .stack{display:flex;flex-direction:column;gap:var(--sp2)}
@@ -243,10 +249,13 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
         <button class="btn pri" id="btnOpen2">選擇圖片檔</button>
       </div>
       <div class="restore" id="restoreBar" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        <img id="restoreThumb" alt="" hidden>
         <div class="rt">
           <span id="restoreTxt"></span>
-          <button class="btn sm" id="btnDiscard">丟棄這些區</button>
+          <div class="racts">
+            <button class="btn sm pri" id="btnRestore">繼續上次</button>
+            <button class="btn sm" id="btnDiscard">丟棄</button>
+          </div>
         </div>
       </div>
       <canvas id="cv" hidden tabindex="0" aria-label="分區畫布"></canvas>
@@ -276,7 +285,7 @@ dialog::backdrop{background:rgba(10,18,32,.5)}
       </div>
 
       <div class="sec">
-        <h3>今日分區 <span class="n" id="cntZone">0</span></h3>
+        <h3>今日分區 <span class="saved" id="savedAt"></span><span class="n" id="cntZone">0</span></h3>
         <div class="list" id="zoneList"></div>
         <p class="muted-note" id="zoneEmpty">還沒有分區。在地圖上圈一塊。</p>
         <div class="rowbtns" id="zoneBtns" hidden style="margin-top:10px">
@@ -394,22 +403,66 @@ function zoneCount(n){return S.shapes.filter(function(s){return s.who===n}).leng
 
 /* ---------- storage (roster + prefs only) ---------- */
 function saveRoster(){try{localStorage.setItem(LS_ROSTER,JSON.stringify(S.people))}catch(e){}}
-var workTimer=null;
+var DBN="zoneboard", DBS="work", _db=null;
+function idb(){
+  return new Promise(function(res){
+    if(_db)return res(_db);
+    if(!window.indexedDB)return res(null);
+    var rq; try{ rq=indexedDB.open(DBN,1); }catch(e){ return res(null); }
+    rq.onupgradeneeded=function(){ try{rq.result.createObjectStore(DBS)}catch(e){} };
+    rq.onsuccess=function(){ _db=rq.result; res(_db); };
+    rq.onerror=function(){ res(null); };
+    setTimeout(function(){ if(!_db)res(null); },4000);
+  });
+}
+function idbDo(mode,fn){
+  return idb().then(function(db){
+    if(!db)return null;
+    return new Promise(function(res){
+      var out=null;
+      try{
+        var t=db.transaction(DBS,mode), st=t.objectStore(DBS);
+        var r=fn(st); if(r)r.onsuccess=function(){out=r.result};
+        t.oncomplete=function(){res(out)};
+        t.onerror=function(){res(null)};
+        t.onabort=function(){res(null)};
+      }catch(e){ res(null); }
+    });
+  });
+}
+function idbPut(k,v){ return idbDo("readwrite",function(st){st.put(v,k)}); }
+function idbGet(k){ return idbDo("readonly",function(st){return st.get(k)}); }
+function idbDel(k){ return idbDo("readwrite",function(st){st.delete(k)}); }
+
+var workTimer=null, savedTimer=null;
+function flashSaved(){
+  var el=$("savedAt"); if(!el)return;
+  var d=new Date(), pad=function(n){return n<10?"0"+n:""+n};
+  el.textContent="\u5df2\u5b58 "+pad(d.getHours())+":"+pad(d.getMinutes());
+  el.classList.add("on");
+  clearTimeout(savedTimer);
+  savedTimer=setTimeout(function(){el.classList.remove("on")},2600);
+}
 function saveWork(){
   S.clean=false;
   clearTimeout(workTimer);
   workTimer=setTimeout(function(){
-    try{
-      if(!S.shapes.length){localStorage.removeItem(LS_WORK);return;}
-      localStorage.setItem(LS_WORK,JSON.stringify({
-        shapes:shapeCopy(),iw:S.iw,ih:S.ih,at:Date.now(),
-        title:$("boardTitle").value}));
-    }catch(e){}
+    var meta={shapes:shapeCopy(),iw:S.iw,ih:S.ih,at:Date.now(),
+              title:$("boardTitle").value,people:S.people};
+    if(!S.shapes.length){
+      try{localStorage.removeItem(LS_WORK)}catch(e){}
+      idbDel("meta"); return;
+    }
+    try{ localStorage.setItem(LS_WORK,JSON.stringify(meta)); }catch(e){}
+    idbPut("meta",meta).then(function(){ flashSaved(); });
   },400);
 }
+function saveImage(blob){ if(blob)idbPut("image",blob); }
 function loadWork(){try{var w=JSON.parse(localStorage.getItem(LS_WORK)||"null");
   return (w&&w.shapes&&w.shapes.length)?w:null;}catch(e){return null}}
-function clearWork(){S.clean=true;try{localStorage.removeItem(LS_WORK)}catch(e){}}
+function clearWork(){S.clean=true;
+  try{localStorage.removeItem(LS_WORK)}catch(e){}
+  idbDel("meta"); idbDel("image");}
 window.addEventListener("beforeunload",function(e){
   if(S.shapes.length&&!S.clean){e.preventDefault();e.returnValue="";}
 });
@@ -952,7 +1005,8 @@ function loadImage(src,seed){
   im.onload=function(){
     S.img=im; S.iw=im.naturalWidth; S.ih=im.naturalHeight;
     if(S.pending){
-      var w=S.pending, kx=S.iw/(w.iw||S.iw), ky=S.ih/(w.ih||S.ih);
+      var w=S.pending, exact=(w.iw===S.iw&&w.ih===S.ih);
+      var kx=S.iw/(w.iw||S.iw), ky=S.ih/(w.ih||S.ih);
       if(S.shapes.length)snap();
       S.shapes=w.shapes.map(function(z){
         return {id:z.id,name:z.name,who:z.who,
@@ -960,8 +1014,10 @@ function loadImage(src,seed){
                 lp:z.lp?[z.lp[0]*kx,z.lp[1]*ky]:null};
       });
       S.pending=null; S.sel=null; $("restoreBar").hidden=true;
+      var n=S.shapes.length;
       setTimeout(function(){
-        showHint("\u5df2\u9084\u539f <b>"+S.shapes.length+"</b> \u584a\u5340 \u00b7 \u2318Z \u53ef\u5fa9\u539f");
+        showHint(exact ? "\u5df2\u5b8c\u6574\u9084\u539f <b>"+n+"</b> \u584a\u5340"
+                       : "\u5df2\u9084\u539f <b>"+n+"</b> \u584a\u5340\uff08\u5e95\u5716\u5c3a\u5bf8\u4e0d\u540c\uff0c\u5df2\u7b49\u6bd4\u7e2e\u653e\uff09\u00b7 \u2318Z \u53ef\u5fa9\u539f");
       },60);
     } else if(!seed){ if(S.shapes.length)snap(); S.shapes=[]; S.sel=null; }
     hideInline(); empty.hidden=true; cv.hidden=false;
@@ -969,8 +1025,13 @@ function loadImage(src,seed){
   };
   im.src=src;
 }
-function fromFile(f){ if(!f||!/^image\//.test(f.type))return;
-  var r=new FileReader(); r.onload=function(){loadImage(r.result,false)}; r.readAsDataURL(f); }
+function fromFile(f){
+  if(!f||!/^image\//.test(f.type))return;
+  S.srcBlob=f;
+  var r=new FileReader();
+  r.onload=function(){ loadImage(r.result,false); saveImage(f); };
+  r.readAsDataURL(f);
+}
 $("fileIn").addEventListener("change",function(){fromFile(this.files[0]);this.value=""});
 $("btnOpen").addEventListener("click",function(){$("fileIn").click()});
 $("btnOpen2").addEventListener("click",function(){$("fileIn").click()});
@@ -1137,20 +1198,39 @@ function boot(){
   setTool(S.tool);
   S.shapes=[]; S.sel=null; S.active=null; S.clean=true;
   cv.hidden=true; empty.hidden=false;
-  var w=loadWork();
-  if(w){
-    S.pending=w;
-    var d=new Date(w.at||Date.now()), pad=function(n){return n<10?"0"+n:""+n};
-    $("restoreTxt").innerHTML="\u4e0a\u6b21\u6709 <b>"+w.shapes.length+
-      "</b> \u584a\u5340\u9084\u6c92\u532f\u51fa\uff08"+(d.getMonth()+1)+"/"+d.getDate()+" "+
-      pad(d.getHours())+":"+pad(d.getMinutes())+"\uff09\u3002\u8cbc\u4e0a\u4eca\u5929\u7684\u5e95\u5716\u5c31\u6703\u81ea\u52d5\u9084\u539f\u3002";
-    if(w.title&&!$("boardTitle").value)$("boardTitle").value=w.title;
-    $("restoreBar").hidden=false;
-  }
+  offerRestore();
   sync(); refreshUndo(); setReady();
 }
+function offerRestore(){
+  idbGet("meta").then(function(meta){
+    var w=(meta&&meta.shapes&&meta.shapes.length)?meta:loadWork();
+    if(!w)return;
+    return idbGet("image").then(function(blob){
+      S.pending={shapes:w.shapes,iw:w.iw,ih:w.ih,at:w.at,title:w.title,blob:blob||null};
+      var d=new Date(w.at||Date.now()), pad=function(n){return n<10?"0"+n:""+n};
+      var mins=Math.round((Date.now()-(w.at||Date.now()))/60000);
+      var when = mins<60 ? (mins<2?"\u525b\u525b":mins+" \u5206\u9418\u524d")
+               : ((d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes()));
+      $("restoreTxt").innerHTML="\u4e0a\u6b21\u6709 <b>"+w.shapes.length+"</b> \u584a\u5340\u9084\u6c92\u532f\u51fa\uff08"+when+"\uff09\u3002"+
+        (blob?"\u9023\u5e95\u5716\u90fd\u5b58\u8d77\u4f86\u4e86\u3002":"\u5e95\u5716\u6c92\u5b58\u5230\uff0c\u8cbc\u4e0a\u4eca\u5929\u7684\u622a\u5716\u5c31\u6703\u5957\u56de\u53bb\u3002");
+      if(w.title&&!$("boardTitle").value)$("boardTitle").value=w.title;
+      if(w.people&&w.people.length&&!S.people.length){S.people=w.people;syncPeople();}
+      var th=$("restoreThumb");
+      if(blob){ try{ th.src=URL.createObjectURL(blob); th.hidden=false; }catch(e){ th.hidden=true; } }
+      else th.hidden=true;
+      $("btnRestore").hidden=!blob;
+      $("restoreBar").hidden=false;
+    });
+  });
+}
+$("btnRestore").addEventListener("click",function(){
+  if(!S.pending||!S.pending.blob)return;
+  S.srcBlob=S.pending.blob;
+  loadImage(URL.createObjectURL(S.pending.blob),false);
+});
 $("btnDiscard").addEventListener("click",function(){
   S.pending=null; clearWork(); $("restoreBar").hidden=true;
+  showHint("\u5df2\u4e1f\u68c4\u4e0a\u6b21\u7684\u5206\u5340");
 });
 boot();
 if(window.ResizeObserver)new ResizeObserver(function(){fit();if(!inl.hidden)hideInline()}).observe(stage);
